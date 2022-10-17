@@ -1,0 +1,88 @@
+---
+title: "Dashdoard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    social: ["twitter", "facebook", "menu"]
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+data(diamonds, package = "ggplot2")
+```
+
+Interacve Data Visualization
+=======================================
+
+column {data-width=650}
+---------------------------------
+
+### Chart A
+
+```{r}
+plot_ly(diamonds, x = ~cut, color = ~clarity, colors = "Accent")
+```
+column {data-width=350}
+---------------------------------
+
+### Chart B
+
+```{r}
+plot_ly(diamonds, x = ~cut, y = ~clarity)
+```
+
+
+### Chart C
+
+```{r}
+plot_ly(diamonds, x = ~cut, color = I("red"), stroke = I("black"), span = I(2))
+```
+
+
+
+Summary {data-orientation=columns}
+===============================================
+
+Column
+-----------------------------------------------
+
+### Max of Diamond Price
+
+```{r}
+valueBox(max(diamonds$price),
+         icon = "fa-user")
+```
+
+### Average Price of Diamonds
+
+```{r}
+valueBox(round(mean(diamonds$price),
+         digits = 2),
+         icon = "fa-area-chart")
+```
+
+
+### Variance of Diamnod Price
+
+```{r}
+valueBox(round(var(diamonds$price),
+         digits = 2),
+         icon = "fa-area-chart")
+```
+
+
+Column 
+-----------------------------------------
+
+Report
+
+* This is a report on `r length(diamonds$price)` diamond price.`
+
+* The average of diamonds was `r mean(diamonds$price)`.
+
+* The variance of the diamonds was `r var(diamonds$price)`.
+
+This report was generated on `r format(Sys.Date(), format = "%B %d, %Y" )`.

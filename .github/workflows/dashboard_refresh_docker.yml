@@ -1,17 +1,18 @@
-name: Dashboard Refresh
+name: Data Refresh
 
-on: 
+on:
   schedule:  
-    - cron:  '0 */12 * * *'
+    - cron:  '0 */8 * * *'
 jobs:
-  refresh-the-dashboard:
-    runs-on: ubuntu-20.04 
+  build:
+    name: refresh the dashboard
+    runs-on: ubuntu-18.04 
     container: 
-      image: rkrispin/flex_dash_env:dev.0.0.0.9000
+     image: docker.io/rkrispin/covid19italy_dash:dev
     steps:
-    - name: checkout_repo
-      uses: actions/checkout@v2
-      with: 
-        ref: 'main'
-    - name: Render Rmarkdown
-      run: bash ./bash/render_dashboard.sh "AhmedAlmustfa" "Ahmedkhatir22@gmail.com"
+      - name: checkout_repo
+        uses: actions/checkout@v2
+        with: 
+          ref: 'master'
+      - name: Render Rmarkdown
+        run: bash ./bash/data_refresh.sh

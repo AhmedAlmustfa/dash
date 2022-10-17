@@ -13,11 +13,14 @@ output:
 library(flexdashboard) # for building dashboards
 library(tidyverse) #for data manipulation
 library(highcharter) # interactive visualization
+library(plotly)
 ```
 
 ```{r read}
 shark <- read_csv("https://raw.githubusercontent.com/amrrs/sharktankindia-analysis/main/ShartankIndiaAllPitches.csv")
 ```
+
+
 
 ```{r summary}
 min_investment <- min(shark[shark$`Investment Amount`>0,]$`Investment Amount`)

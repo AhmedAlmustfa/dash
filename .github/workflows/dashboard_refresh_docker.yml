@@ -8,11 +8,11 @@ jobs:
     name: refresh the dashboard
     runs-on: ubuntu-22.04 
     container: 
-     image: docker.io/rkrispin/covid19italy_dash:dev
+     image: rkrispin/flex_dash_env:dev.0.0.0.9000
     steps:
       - name: checkout_repo
         uses: actions/checkout@v2
         with: 
-          ref: 'master'
+          ref: 'main'
       - name: Render Rmarkdown
         run: bash ./bash/data_refresh.sh "AhmedAlmustfa" "ahmedkhatir22@gmail.com"

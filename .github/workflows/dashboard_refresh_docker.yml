@@ -15,4 +15,4 @@ jobs:
         with: 
           ref: 'master'
       - name: Render Rmarkdown
-        run: bash ./bash/data_refresh.sh
+        run: bash ./bash/data_refresh.sh "AhmedAlmustfa" "ahmedkhatir22@gmail.com"

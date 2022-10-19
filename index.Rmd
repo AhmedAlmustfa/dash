@@ -13,12 +13,11 @@ library(flexdashboard)
 library(plotly)
 library(data.table)
 data(diamonds, package = "ggplot2")
-```
-
-```{r}
 diamonds <- data.table(diamonds)
 data <- diamonds[sample(.N, 10000)]
 ```
+
+
 
 Interacve Data Visualization
 =======================================
@@ -92,3 +91,4 @@ Report
 * The variance of the diamonds was `r var(data$price)`.
 
 This report was generated on `r format(Sys.Date(), format = "%B %d, %Y" )`.
+

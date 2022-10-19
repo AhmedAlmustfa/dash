@@ -17,7 +17,7 @@ data(diamonds, package = "ggplot2")
 
 ```{r}
 diamonds <- data.table(diamonds)
-data <- diamonds[sample(.N, 1000)]
+data <- diamonds[sample(.N, 10000)]
 ```
 
 Interacve Data Visualization

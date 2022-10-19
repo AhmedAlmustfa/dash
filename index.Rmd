@@ -10,6 +10,7 @@ output:
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+install.packages("plotly")
 library(plotly)
 library(data.table)
 data(diamonds, package = "ggplot2")

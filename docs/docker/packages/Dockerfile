@@ -1,4 +1,4 @@
-FROM rkrispin/baser4:v4.0.0
+FROM rocker/rstudio:4.2
 
 LABEL maintainer="Rami Krispin <rami.krispin@gmail.com>"
 

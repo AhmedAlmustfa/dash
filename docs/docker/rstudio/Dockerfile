@@ -1,4 +1,4 @@
-FROM  docker.io/rkrispin/covid19italy_dash:dev
+FROM  rkrispin/flex_dash_env:dev.0.0.0.9000
 
 ARG RSTUDIO_VERSION
 #ENV RSTUDIO_VERSION=${RSTUDIO_VERSION:-1.1.463}

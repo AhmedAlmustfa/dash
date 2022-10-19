@@ -2,7 +2,7 @@ name: Data Refresh
 
 on:
   schedule:  
-    - cron:  '0 */1 * * *'
+    - cron:  '30 9 * * *'
 jobs:
   build:
     name: refresh the dashboard

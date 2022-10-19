@@ -5,6 +5,7 @@ echo "Rendering the dashboard..."
 Rscript -e "rmarkdown::render_site()"
 
 # Fix github issue
+
 git config --global --add safe.directory /__w/dash/dash
 
 if [[ "$(git status --porcelain)" != "" ]]; then

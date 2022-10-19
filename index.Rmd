@@ -85,7 +85,7 @@ Column
 
 Report
 
-* This is a report on `r length(data$price)` diamond price.`
+* This is a report on `r max(data$price)` diamond price.`
 
 * The average of diamonds was `r mean(data$price)`.
 

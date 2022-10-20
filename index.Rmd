@@ -44,7 +44,7 @@ Mysheet <- gs4_create(
 Data Visualization
 =======================================
 
-column {data-width=30}
+Rows
 ---------------------------------
 
 ### Average of carat
@@ -110,7 +110,7 @@ p4 <- plot_ly(data, x = ~price) %>%
 p4
 ```
 
-column {data-width=350}
+columns {data-width=350}
 ---------------------------------
 
 ### Heatmap of cut vs clarity
@@ -152,7 +152,7 @@ datatable(
 Summary {data-orientation=columns}
 ===============================================
 
-Column
+columns
 -----------------------------------------------
 
 ### Min of Diamod Price
@@ -188,7 +188,7 @@ valueBox(round(sqrt(var(data$price)),
 ```
 
 
-Column 
+Rows 
 -----------------------------------------
 
 Report

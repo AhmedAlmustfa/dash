@@ -11,12 +11,30 @@ output:
 ```{r setup, include=FALSE}
 library(flexdashboard)
 install.packages("plotly")
+install.packages("googlesheets4")
+library(googlesheets4)
 library(plotly)
 library(data.table)
 data(diamonds, package = "ggplot2")
 diamonds <- data.table(diamonds)
 data <- diamonds[sample(.N, 10000)]
 ```
+
+```{r}
+gs4_auth(
+  cache = "./secrets/",
+  email = "ahmedkhatir22@gmail.com"
+)
+```
+
+```{r}
+Mysheet <- gs4_create(
+  "SheetName",
+  sheets = list(data)
+)
+```
+
+
 
 
 

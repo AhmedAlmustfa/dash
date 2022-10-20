@@ -12,12 +12,15 @@ output:
 library(flexdashboard)
 install.packages("plotly")
 install.packages("googlesheets4")
+install.packages("DT")
+library(DT)
 library(googlesheets4)
 library(plotly)
 library(data.table)
 data(diamonds, package = "ggplot2")
 diamonds <- data.table(diamonds)
 data <- diamonds[sample(.N, 10000)]
+data <- data.frame(data)
 ```
 
 ```{r}
@@ -38,33 +41,112 @@ Mysheet <- gs4_create(
 
 
 
-Interacve Data Visualization
+Data Visualization
 =======================================
 
-column {data-width=650}
+column {data-width=30}
 ---------------------------------
 
-### Chart A
+### Average of carat
+
+```{r}
+valueBox(round(mean(data$carat), 3),
+         icon = "fa-chart-area")
+```
+
+
+### Average of price
+
+```{r}
+valueBox(round(mean(data$price), 3), 
+         icon = "fa-credit-card")
+```
+
+### Average of depth
+
+```{r}
+valueBox(round(mean(data$depth), 3), 
+         icon = "fa-signal")
+```
+
+###  Diamonds price index
+
+```{r}
+gauge(round(mean(data$price),
+            digits = 2),
+            min = 0,
+            max = max(data$price),
+            gaugeSectors(success = c(0,min(data$price)),
+                         warning = c(min(data$price),mean(data$price)),
+                         danger = c(mean(data$price),max(data$price)),
+                         colors = c("green", "yellow", "red")))
+```
+
+
+
+column {data-width=350}
+---------------------------------
+
+### Bar chart of the quality of the cut by clarity
 
 ```{r}
 plot_ly(data, x = ~cut, color = ~clarity, colors = "Accent")
 ```
+
+### Scatter plot of carat vs price
+
+```{r}
+p4 <- plot_ly(data, x = ~price) %>%
+  add_markers(y = ~carat,
+              text = ~paste('Carat: ', carat),
+              showlegend = F) %>%
+  add_lines(y = ~fitted(loess(carat ~price)),
+            name = 'Loes Smoother',
+            color = I("#FFC125"),
+            showlegend =T,
+            line = list(width = 5)) %>%
+  layout(xaxis = list(title = "Price"),
+         yaxis = list(title = "Carat"))
+p4
+```
+
 column {data-width=350}
 ---------------------------------
 
-### Chart B
+### Heatmap of cut vs clarity
 
 ```{r}
 plot_ly(data, x = ~cut, y = ~clarity)
 ```
 
 
-### Chart C
+### Scatter plot of cut
 
 ```{r}
 plot_ly(data, x = ~cut, color = I("red"), stroke = I("black"), span = I(2))
 ```
 
+
+Data Table
+============================================
+
+
+```{r}
+# put CSV, XLS, and PDF in a collection
+datatable(
+  data,
+  extensions = 'Buttons', options = list(pageLength = 25,
+    dom = 'Bfrtip',
+    buttons = 
+      list('copy', 'print', list(
+        extend = 'collection',
+        buttons = c('csv', 'excel'),
+        text = 'Download'
+      ))
+    
+  )
+)
+```
 
 
 Summary {data-orientation=columns}
@@ -73,11 +155,19 @@ Summary {data-orientation=columns}
 Column
 -----------------------------------------------
 
+### Min of Diamod Price
+
+```{r}
+valueBox(min(data$price),
+         icon = "fa-bolt")
+```
+
+
 ### Max of Diamond Price
 
 ```{r}
 valueBox(max(data$price),
-         icon = "fa-user")
+         icon = "fa-bullhorn")
 ```
 
 ### Average Price of Diamonds
@@ -89,12 +179,12 @@ valueBox(round(mean(data$price),
 ```
 
 
-### Variance of Diamnod Price
+### Volatility of Diamnod Price
 
 ```{r}
-valueBox(round(var(data$price),
+valueBox(round(sqrt(var(data$price)),
          digits = 2),
-         icon = "fa-area-chart")
+         icon = "fa-chart-line")
 ```
 
 
@@ -107,7 +197,6 @@ Report
 
 * The average of diamonds was `r mean(data$price)`.
 
-* The variance of the diamonds was `r var(data$price)`.
+* The variance of the diamonds was `r sqrt(var(data$price))`.
 
 This report was generated on `r format(Sys.Date(), format = "%B %d, %Y" )`.
-

@@ -13,4 +13,4 @@ jobs:
     - name: Step 1 - Echo out a Github Actions Secret to the logs
       run: |
        echo "The Github Actions Secret will be masked:  "
-       echo ${{ secret.CANDY_SHOP }}
+       echo ${{ secrets.CANDY_SHOP }}

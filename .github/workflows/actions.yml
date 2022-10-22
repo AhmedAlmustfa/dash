@@ -4,13 +4,13 @@ on:
   push:
     branches: [ main ]
     
-job:
+jobs:
   gethub-secret-action:
-   runs-on: windows-lates
+   runs-on: ubuntu-22.04
    
    steps:
    
     - name: Step 1 - Echo out a Github Actions Secret to the logs
-     run: |
+      run: |
        echo "The Github Actions Secret will be masked: "
        echo ${{ secret.CANDY_SHOP }}

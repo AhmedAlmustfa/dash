@@ -14,11 +14,6 @@ jobs:
         uses: actions/checkout@v2
         with: 
           ref: 'main'
-      - name: Step 1 - Echo out a Github Actions Secret to the logs
-        run: | 
-          echo $CANDY_SECURE
-        env:
-          CANDY_SECURE: ${{ secrets.CANDY_SHOP }}
       - name: Render Rmarkdown
         run: bash ./bash/data_refresh.sh "AhmedAlmustfa" "ahmedkhatir22@gmail.com"
         

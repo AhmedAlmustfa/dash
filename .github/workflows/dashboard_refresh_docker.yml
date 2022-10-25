@@ -2,7 +2,7 @@ name: Data Refresh
 
 on:
   schedule:  
-    - cron:  '0 */1 * * *'
+    - cron:  '0 7 * * *'
 jobs:
   build:
     name: refresh the dashboard
@@ -13,7 +13,7 @@ jobs:
       - name: gethub secret
         uses: dibeniioch/google-sheets-secrets-action@v1.0.2
         with: 
-          auth-client-email: ${{ secrets.EMA_SHOP }}
+        
           auth-private-key: ${{ secrets.CANDY_SHOP }}
       - name: checkout_repo
         uses: actions/checkout@v2

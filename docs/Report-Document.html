@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.189">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Deploying Flex-dashboard on Github Pages with Github Actions and Docker</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="Report-Document_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Report-Document_files/libs/quarto-html/quarto.js"></script>
+<script src="Report-Document_files/libs/quarto-html/popper.min.js"></script>
+<script src="Report-Document_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Report-Document_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Report-Document_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Report-Document_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Report-Document_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Report-Document_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Report-Document_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#table-of-content" id="toc-table-of-content" class="nav-link active" data-scroll-target="#table-of-content"><span class="toc-section-number">1</span>  Table of content</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation"><span class="toc-section-number">2</span>  Motivation</a></li>
+  <li><a href="#general-requirement" id="toc-general-requirement" class="nav-link" data-scroll-target="#general-requirement"><span class="toc-section-number">3</span>  General requirement</a></li>
+  <li><a href="#workflow" id="toc-workflow" class="nav-link" data-scroll-target="#workflow"><span class="toc-section-number">4</span>  Workflow</a>
+  <ul class="collapse">
+  <li><a href="#create-github-repositiry" id="toc-create-github-repositiry" class="nav-link" data-scroll-target="#create-github-repositiry"><span class="toc-section-number">4.1</span>  Create Github repositiry</a></li>
+  <li><a href="#setting-environment-variables" id="toc-setting-environment-variables" class="nav-link" data-scroll-target="#setting-environment-variables"><span class="toc-section-number">4.2</span>  Setting environment variables</a></li>
+  <li><a href="#set-the-docker-enviroment" id="toc-set-the-docker-enviroment" class="nav-link" data-scroll-target="#set-the-docker-enviroment"><span class="toc-section-number">4.3</span>  Set the docker enviroment</a></li>
+  <li><a href="#setting-the-enviroment-with-rstudio-server" id="toc-setting-the-enviroment-with-rstudio-server" class="nav-link" data-scroll-target="#setting-the-enviroment-with-rstudio-server"><span class="toc-section-number">4.4</span>  Setting the enviroment with Rstudio server</a></li>
+  <li><a href="#dashboard-develoment" id="toc-dashboard-develoment" class="nav-link" data-scroll-target="#dashboard-develoment"><span class="toc-section-number">4.5</span>  Dashboard develoment</a></li>
+  <li><a href="#deploying-on-github-pages" id="toc-deploying-on-github-pages" class="nav-link" data-scroll-target="#deploying-on-github-pages"><span class="toc-section-number">4.6</span>  Deploying on github pages</a></li>
+  <li><a href="#set-the-automation-with-github-actions" id="toc-set-the-automation-with-github-actions" class="nav-link" data-scroll-target="#set-the-automation-with-github-actions"><span class="toc-section-number">4.7</span>  Set the automation with github actions</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="toc-section-number">4.8</span>  Summary</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Deploying Flex-dashboard on Github Pages with Github Actions and Docker</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    
+  </div>
+  
+
+</header>
+
+<section id="table-of-content" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Table of content</h1>
+<div class="incremental">
+<ul class="incremental">
+<li>Motivation</li>
+<li>General requirement</li>
+<li>Workflow</li>
+<li>Summary</li>
+</ul>
+</div>
+</section>
+<section id="motivation" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Motivation</h1>
+<p>The objective of this document is to present the procedures of how to deploy and automate a <a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboard</a> on <a href="https://pages.github.com/">Github pages</a> with <a href="https://www.docker.com/">Docker</a> and <a href="https://github.com/features/actions">Github Actions</a>. However, our example consist of building a dashboard that automatically update itself according to the following:</p>
+<div class="[.incremental]">
+<ul>
+<li>1-everyday at 9am a random sample is selected from the rows of the dataframe.</li>
+<li>2-updates the dashboard with the rows selected in step 1.</li>
+<li>3- prints the datafram obtained in step 1 in a googlesheet.</li>
+</ul>
+</div>
+<p>The dataset used for this purpose is <a href="https://bookdown.org/yih_huynh/Guide-to-R-Book/diamonds.html">Diamonds</a> dataset. This dataset contains information about <code>53,940</code> round-cut diamonds. Each row of data represents a different diamond and there are <code>53,940</code> rows of data (see help page, <code>?diamonds</code>). There are <code>10</code> variables measuring various pieces of information about the diamonds. Notice that these variable names are in lowercase. We can take a quick view of the variable names using:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(diamonds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "carat"   "cut"     "color"   "clarity" "depth"   "table"   "price"  
+ [8] "x"       "y"       "z"      </code></pre>
+</div>
+</div>
+<div class="[.incremental]">
+<ul>
+<li>There are 3 variables with an ordered factor structure: <code>cut</code>, <code>color</code>, &amp; <code>clarity</code>. An ordered factor arranges the categorical values in a low-to-high rank order. For example, there are 5 categories of diamond cuts with <code>Fair</code> being the lowest grade of cut to <code>ideal</code> being the highest grade.</li>
+<li>There are 6 variables that are of numeric structure: <code>carat</code>, <code>depth</code>, <code>table</code>, <code>x</code>, <code>y</code>, <code>z</code></li>
+<li>There is 1 variable that has an integer structure: <code>price</code></li>
+</ul>
+</div>
+<p>This <a href="https://ahmedalmustfa.github.io/dash/">dashboard</a> is build according to the concepts of deploying flexdashboard to Github Pages and automating the dashboard data refresh with Github Actions and Docker.</p>
+<div id="fig-penguins" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figures/dashboard.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;1: Diamonds dataset flexdashboard</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="general-requirement" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> General requirement</h1>
+<p>To follow up with this dashborad it was important having all the following requirement:</p>
+<div class="[.incremental]">
+<ul>
+<li><a href="https://www.docker.com/products/docker-desktop/">Install Docker Desktop</a></li>
+<li>Have a <a href="https://hub.docker.com/">Docker Hub</a> account</li>
+<li>Have a <a href="https://github.com">Github</a> account</li>
+<li>Having <a href="https://git-scm.com/downloads">Git</a> insatlled</li>
+<li><a href="https://www.rstudio.com/products/rstudio/">Install RStudio Desktop</a></li>
+</ul>
+</div>
+<p>I am not going to give information about how to install docker desktop you can just follow the instruction in <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop web</a> and download it based on your operation system. The Docker Hub is the “Github” of container images. It enables you to store your container images and pull and use other users’ containers. To register and create an account go to (https://hub.docker.com) and follow the registration instructions. After registration you can open a command propmt and type docker login then provide your credentials or if you are already loged in your ducker hub account you can just type <code>docker login</code> in the command line.</p>
+<pre class="shell"><code> docker login</code></pre>
+<p>For the login, you will have to enter your user name and password, and should expect the following output if the login was successful:</p>
+<pre class="shell"><code>Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username: rkrispin
+Password:
+Login Succeeded
+
+Logging in with your password grants your terminal complete access to your account.
+For better security, log in with a limited-privilege personal access token. Learn more at https://docs.docker.com/go/access-tokens/</code></pre>
+<p><strong>Note:</strong> Docker Hub is completely public (at the free tier). Any image you push and store there will be available for all other users. <strong>NEVER</strong> store credentials, passwords, or any other sensitive information on your Docker images.</p>
+</section>
+<section id="workflow" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Workflow</h1>
+<section id="create-github-repositiry" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="create-github-repositiry"><span class="header-section-number">4.1</span> Create Github repositiry</h2>
+<p>Now let us go to the next step which is to set up the variable environment but before that let’s create github repository and clone the repository in a local directory, the structure of the repository is as the following:</p>
+<div class="[.incremental]">
+<ul>
+<li>We will use the <code>.github folder</code> to set the Github Actions workflows</li>
+<li>The <code>bash folder</code> will be used to store bash scripts that will be used on the Github Actions workflow</li>
+<li>By default Rstudio when you want to save a file in googleshhet will ask about authentication, the <code>secret file</code> is where a token is stored so that every time we run the code we do no have to give R permission to use googlesheet.</li>
+<li>The <code>docker folder</code> contains all the Docker image settings files (e.g., Dockerfile and some helper files)</li>
+<li>The <code>docs folder</code> will be used to store the rendered dashboard files</li>
+<li>All the images in the <code>README file</code> will be stored in the image folder</li>
+</ul>
+</div>
+<pre class="shell"><code>.
+├── .github
+├── bash
+├── docker
+├── docs
+└── images</code></pre>
+</section>
+<section id="setting-environment-variables" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="setting-environment-variables"><span class="header-section-number">4.2</span> Setting environment variables</h2>
+<p>Here it means that the we need to set up the the image that we are going to use and the paths for R studio and our local path so that we can run Rstudio in docker and we can open it in our browser. To do that we should set up the following variabels:</p>
+<div class="[.incremental]">
+<ul>
+<li><code>FLEX_IMAGE</code> - The development image name, here we are working with the image developed by <a href="https://github.com/RamiKrispin/deploy-flex-actions">RamiKrispin</a> <code>rkrispin/flex_dash_env:dev.0.0.0.9000</code>.</li>
+<li><code>LOCAL_WORKING_DIR_PATH</code> (e.g., the cloned repository). This variable will be used to bind your Docker container with your local machine. This will be mainly relevant if you are using the RStudio server as your working IDE</li>
+<li><code>RSTUDIO_CONFIG_PATH</code> - The path for the local RStudio config folder. Typically it would be your home directory + <code>.config/rstudio</code>. This variable will be used to mirror your local RStudio settings (color theme, code snippets, panel settings, etc.) to the Rstudio server on the container.</li>
+</ul>
+</div>
+</section>
+<section id="set-the-docker-enviroment" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="set-the-docker-enviroment"><span class="header-section-number">4.3</span> Set the docker enviroment</h2>
+<p>Once you have finished with installing docker and creating docker account, you need to build a docker image which is a <a href="https://github.com/AhmedAlmustfa/dash/blob/main/docker/packages/Dockerfile">Dockerfile</a>. The Dockerfile contains a list of instructions for the docker build command about how to construct the image. There are multiple approaches for setting up a Docker environment with the <a href="https://github.com/AhmedAlmustfa/dash/blob/main/docker/packages/Dockerfile">Dockerfile</a>. However, since we are going to use the image developed by <a href="https://github.com/RamiKrispin/deploy-flex-actions">RamiKrispin</a> we are not going to build a docker image in this project. The Dockerfile provides a set of instructions for the docker engine about how to build the image. You can think about it as the image’s recipe.</p>
+</section>
+<section id="setting-the-enviroment-with-rstudio-server" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="setting-the-enviroment-with-rstudio-server"><span class="header-section-number">4.4</span> Setting the enviroment with Rstudio server</h2>
+<p>Now that we have the dockerfile set we can spin a docker image into a running container using the following command line in the command prompt:</p>
+<pre class="shell"><code>docker run -d -p 8787:8787 rkrispin/flex_dash_env:dev.0.0.0.9000</code></pre>
+<p>Now let’s expalin what this line does:</p>
+<div class="[.incremental]">
+<ul>
+<li><code>docker run</code> command enables you to launch a container.</li>
+<li><code>-d</code> to run the container in the background (detach mode)</li>
+<li><code>-p</code> argument maps between the container and the local machine ports, where the right to the : symbol represents the port that is exposed on the container, and the one on the left represents the port on the local machine. In the above example, we mapped port 8787 on the docker to port 8787 on the local machine.</li>
+<li><code>rkrispin/flex_dash_env:dev.0.0.0.9000</code> name of the image we want to launch.</li>
+</ul>
+</div>
+<p>Once you hit enter it will start running, If the image is unavailable locally, it will try to pull it from the default hub (make sure you logged in, it might take a few minutes to download it). If the image was successfully launched, it should return the container ID, for example:</p>
+<p><code>f48d4e11cd9cabc227aa7629b372ff9d6034d18ab5c1a370d76960297e56dfe5</code></p>
+<p>Now if you want to check if the image is running you can type in the command prompt</p>
+<pre class="shell"><code>docker ps
+
+CONTAINER ID   IMAGE                                   COMMAND                  CREATED              STATUS              PORTS                    NAME
+f48d4e11cd9c   rkrispin/flex_dash_env:dev.0.0.0.9000   "/usr/lib/rstudio-se…"   About a` minute ago   Up About a minute   0.0.0.0:8787-&gt;8787/tcp   elastic_thompson</code></pre>
+<p>And you can see you have information about the image that is running, <code>CONTAINER ID</code>, <code>IMAGE name</code> <code>PORTS</code> etc.,</p>
+<p>Now that we make sure everything is fine and the image is running, we can go to the browser and type<code>*http://localhost:8787</code> and it will direct you to Rstudio server. By default, the RStudio server requires a user name and password, but this authentication process has been disabled in the <a href="https://github.com/AhmedAlmustfa/dash/blob/main/docker/packages/Dockerfile">Dockerfile</a> by using the <code>ENV</code> command to define the environment variable USER and set it as rstudio and the <code>CMD</code> command to disable the authentication step. However, now you can access the Rstudio server from the browser without authentication:</p>
+<div id="fig-penguins" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figures/Screenshot%20(81).png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;2: Rstudio server running in the browser</figcaption><p></p>
+</figure>
+</div>
+<p>We have a functional environment, yet we are still missing a couple of elements to make this container fully functional as a development environment. For example, although we can access the container from the browser, it is still an isolated environment as we can’t save or commit changes in the code. Let’s add the -v argument to mount a local volume with the container. This will enable you to work inside the container and read and write data from your local machine. If the container is already running, use the docker kill, followed by the container ID (see the docker ps output for the container ID) to stop the running containers:</p>
+<p><code>docker kill ac26ec61e71b</code></p>
+<p>Let’s repeat the previous command and add the -v argument to mount the container to your local folder:</p>
+<p>You can see now, after binding the local folder to the docker with the -v argument, the flexdash folder is now available inside the container:</p>
+<div id="fig-pengui" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figures/Screenshot%20(82).png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;3: Rstudio server running in the browser</figcaption><p></p>
+</figure>
+</div>
+<p>Note that the <code>YOUR_LOCAL_PATH</code> environment variable represents the local folder path on my machine, the <code>/home/rstudio/</code> folder is the root folder on the container, and dash is the name of the mounted folder inside the container. To run it on your local machine.</p>
+<p>Does it sufficient to start developing our dashboard? Technically, yes, we can now develop and test our code inside the container and save the changes on the local folder (and commit the changes with git). But before we continue, let’s mount our local RStudio config file with the one on the container. This will mirror your local RStudio setting to the RStudio server running inside the container:</p>
+<pre class="shell"><code>docker run -d -p 8787:8787 \
+ -v YOUR_LOCAL_PATH:/home/rstudio/FOLDER_NAME \
+ -v $RSTUDIO_CONFIG_PATH:/home/rstudio/.config/rstudio \
+ rkrispin/flex_dash_env:dev.0.0.0.9000</code></pre>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note: Your local R setting file should be, by default, under your root folder, for example, the path on my machine - C:/Users/Asus/AppData/Roaming/RStudio:/home/rstudio/.config/rstudio</p>
+</div>
+</div>
+<div id="fig-penguins" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figures/Screenshot%20(83).png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;4: Rstudio server running in the browser</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="dashboard-develoment" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="dashboard-develoment"><span class="header-section-number">4.5</span> Dashboard develoment</h2>
+<p>As for dashboard development, first we will have to set the <code>_site.yml</code>, that give as the permission to set up the site option. The name refer to the site name while the argument output-dir specify the rendering output directory.</p>
+<pre class="shell"><code>name: "Dashboard"
+output_dir: docs</code></pre>
+<p>This will direct the output of the flexdashboard files to the docs folder, which will enable to build a site with Github Pages.</p>
+<p>To create a flexdashboard, here we are using Rstudio so from the toolbar select File and then New file from which we select Rmarkdown and from its template select flex dashboard, then it will appear the following page:</p>
+<pre class="shell"><code>---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---</code></pre>
+<p>We will name the template file as index.Rmd, which will generate an index.html that will be used as the website file. However, now you can you can build the dashboard and render it after that commit the output and push it to Github repository, it will ask you to provide your Github credintials, so go to the terminal and provide the following:</p>
+<pre class="shell"><code>* git config --global user.email "YOUR_EMAIL"
+* git config --global user.name "GITHUB_USER_NAME"</code></pre>
+<p>Having done with this, it may ask you again when you need to push the output to provide you <code>Github username</code> and and <code>gihub password</code>, for the username give provide your usename for the github password you have go back to your github and create a <code>github tocken</code> copy that tocken and paste it where it requires you to give your github password, after this you can push the output to your github repository.</p>
+</section>
+<section id="deploying-on-github-pages" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="deploying-on-github-pages"><span class="header-section-number">4.6</span> Deploying on github pages</h2>
+<p>To deploy the flex dashboard in Github Pages go to the repository select setting and then pages, then make sure that where it is written source <code>Deploy from a branch</code> is selected then select <code>docs</code> and click <code>save</code>, It might take a few minutes until the website is render and you should see the link for the website on that page (refresh the page if you cannot see it). Github Pages use the following website address pattern:</p>
+<p>https://GITHUB_USER_NAME.github.io/REPO_NAME/</p>
+<p>In this example the link for the dashboard is: <a href="https://ahmedalmustfa.github.io/dash/">Link</a></p>
+<p>The following screeshot shows the steps:</p>
+<div id="fig-pes" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figures/Screenshot%20(84).png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;5: Steps to deploy on Githup Pages</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="set-the-automation-with-github-actions" class="level2" data-number="4.7">
+<h2 data-number="4.7" class="anchored" data-anchor-id="set-the-automation-with-github-actions"><span class="header-section-number">4.7</span> Set the automation with github actions</h2>
+<p>By this point, we set a development environment with Docker, built a dashboard, tested it inside the container, and deployed it on Github Pages. The next step is to set a workflow on Github Actions which will rerender the dashboard daily to get up-to-date with the data selected randomly.</p>
+<p>Now let us start by creating a workflow from Github Action. There is no specific built-in workflow for our use case. Therefore we will select the set up a workflow yourself, clicking on that Github will automatically generate a file named <code>main.yml</code> under the folder <code>.github/workflows/</code>.</p>
+<pre class="shell"><code>name: Dashboard Refresh
+
+on: 
+  schedule:  
+    - cron:  '0 9 * * *'
+jobs:
+  refresh-the-dashboard:
+    runs-on: ubuntu-20.04  
+    container: 
+      image: rkrispin/flex_dash_env:dev.0.0.0.9000
+    steps:
+    - name: checkout_repo
+      uses: actions/checkout@v2
+      with: 
+        ref: 'main'
+    - name: Render Rmarkdown
+      run: bash ./bash/render_dashboard.sh "YOUR_GITHUB_USER_NAME" "YOUR_GITHUB_LOGIN_EMAIL"</code></pre>
+<p>Let’s review the key arguments of the above yml file:</p>
+<div class="[.incremental]">
+<ul>
+<li><code>name</code> - Defines the workflow name</li>
+<li><code>on</code> - Defines the trigger method of the job. In our use case, we will set a scheduled job to run everyday <code>at 09:00am</code>:</li>
+</ul>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>The cron setting on Github Actions follows the regular structure of minute, hour, day of the month, month, and day of the week.</li>
+<li>In the above setting, <code>0 9 * * *</code> represents - running everyday at 9 at the beginning of the hour</li>
+<li>The crontab guru is a nice resource to translate cron settings into human language format</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><code>jobs</code> - Defines the jobs to execute during the run time. In our case, we have a single job to run, and we define it as refresh-the-dashboard</li>
+<li><code>runs-on</code> - Sets the OS system to run the job. So far, I have used Ubuntu-18.04. However, Github announced that they deprecated this version. Therefore, we will use the recommended version - Ubuntu-20.04.</li>
+<li><code>container</code> - This argument enables us to run the job inside a containerized environment (which was the main reason for setting a dockerized development environment). image - As the name implies, set the image name. In this case, we will use the same image we used for the development</li>
+<li><code>steps</code> - Defines the executions steps of the job using the following arguments:</li>
+</ul>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>name - Defines the step name</li>
+<li>run - Executes code on the command line</li>
+</ul>
+</div>
+</div>
+<ul>
+<li>We will use the following steps:</li>
+</ul>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Checkout from the repo (equivalent to git clone), and use the ref argument to define the branch we want to use for the job.</li>
+<li>Once we checked out, we can call, reference, and run files from the repo (with respect to the branch we referenced)</li>
+<li>We will use the run argument to call the bash script that we created to render the dashboard and push the changes</li>
+</ul>
+</div>
+</div>
+</div>
+<p>After setting the workflow on the Github interface, I recommend syncing the changes on the origin with your local branch by using git pull</p>
+</section>
+<section id="summary" class="level2" data-number="4.8">
+<h2 data-number="4.8" class="anchored" data-anchor-id="summary"><span class="header-section-number">4.8</span> Summary</h2>
+<p>The scope of this project was to to build a dashboard that can update itself automatically in a daily basis, by randomly select a subset from the dataset and use this subset to update the dashboard and accordingly save this subset data in googleshhets. However, to achieve this objective we had to deal with following arguments:</p>
+<div class="[.incremental]">
+<ul>
+<li>Developing flex-dashboard using Rstodio.</li>
+<li>Ruining an image in a docker container.</li>
+<li>Deploying in Github Pages.</li>
+<li>Github Actions.</li>
+</ul>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

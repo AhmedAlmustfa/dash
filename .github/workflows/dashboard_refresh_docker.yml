@@ -11,9 +11,8 @@ jobs:
      image: rkrispin/flex_dash_env:dev.0.0.0.9000
     steps:
       - name: gethub secret
-        uses: dibeniioch/google-sheets-secrets-action@v1.0.2
-        with: 
-        
+        uses: actions/checkout@v2
+        with:        
           auth-private-key: ${{ secrets.CANDY_SHOP }}
       - name: checkout_repo
         uses: actions/checkout@v2

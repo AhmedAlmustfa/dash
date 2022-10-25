@@ -1,0 +1,310 @@
+---
+title: "Deploying Flex-dashboard on Github Pages with Github Actions and Docker"
+format:
+  html:
+   theme: flatly
+   code-fold: true
+   toc: true
+   number-sections: true
+   code-copy: true
+---
+
+# Table of content
+
+::: {.incremental}
+* Motivation
+* General requirement
+* Workflow
+* Summary
+:::
+
+
+
+
+# Motivation
+The objective of this document is to present the procedures of how to deploy and automate a [flexdashboard](https://pkgs.rstudio.com/flexdashboard/) on [Github pages](https://pages.github.com/) with [Docker](https://www.docker.com/) and [Github Actions](https://github.com/features/actions). However, our example consist of building a dashboard that automatically update itself according to the following:
+
+:::[.incremental]
+* 1-everyday at 9am a random sample is selected from the rows of the dataframe.
+* 2-updates the dashboard with the rows selected in step 1.
+* 3- prints the datafram obtained in step 1 in a googlesheet.
+:::
+
+The dataset used for this purpose is [Diamonds](https://bookdown.org/yih_huynh/Guide-to-R-Book/diamonds.html) dataset. This dataset contains information about `53,940` round-cut diamonds. Each row of data represents a different diamond and there are `53,940` rows of data (see help page, `?diamonds`). There are `10` variables measuring various pieces of information about the diamonds. Notice that these variable names are in lowercase. We can take a quick view of the variable names using:
+
+```{r, include=FALSE}
+data(diamonds, package = "ggplot2")
+```
+
+```{r}
+names(diamonds)
+```
+
+:::[.incremental]
+* There are 3 variables with an ordered factor structure: `cut`, `color`, & `clarity`. An ordered factor arranges the categorical values in a low-to-high rank order. For example, there are 5 categories of diamond cuts with `Fair` being the lowest grade of cut to `ideal` being the highest grade.
+* There are 6 variables that are of numeric structure: `carat`, `depth`, `table`, `x`, `y`, `z`
+* There is 1 variable that has an integer structure: `price`
+:::
+
+This [dashboard](https://ahmedalmustfa.github.io/dash/) is build according to the concepts of deploying flexdashboard to Github Pages and automating the dashboard data refresh with Github Actions and Docker.
+
+![Diamonds dataset flexdashboard](figures/dashboard.png){#fig-penguins}
+
+
+# General requirement
+To follow up with this dashborad it was important having all the following requirement:
+
+:::[.incremental]
+* [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
+* Have a [Docker Hub](https://hub.docker.com/) account
+* Have a [Github](https://github.com) account
+* Having [Git](https://git-scm.com/downloads) insatlled
+* [Install RStudio Desktop](https://www.rstudio.com/products/rstudio/)
+:::
+
+I am not going to give information about how to install docker desktop you can just follow the instruction in [Docker Desktop web](https://www.docker.com/products/docker-desktop/) and download it based on your operation system. The Docker Hub is the "Github" of container images. It enables you to store your container images and pull and use other users' containers. To register and create an account go to (https://hub.docker.com) and follow the registration instructions. After registration you can open a command propmt and type docker login then provide your credentials or if you are already loged in your ducker hub account you can just type `docker login` in the command line. 
+
+``` shell
+ docker login
+```
+
+For the login, you will have to enter your user name and password, and should expect the following output if the login was successful:
+
+``` shell
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username: rkrispin
+Password:
+Login Succeeded
+
+Logging in with your password grants your terminal complete access to your account.
+For better security, log in with a limited-privilege personal access token. Learn more at https://docs.docker.com/go/access-tokens/
+```
+**Note:**  Docker Hub is completely public (at the free tier). Any image you push and store there will be available for all other users. **NEVER** store credentials, passwords, or any other sensitive information on your Docker images.
+
+# Workflow
+
+## Create Github repositiry
+
+Now let us go to the next step which is to set up the variable environment but before that let's create github repository and clone the repository in a local directory, the structure of the repository is as the following:
+
+:::[.incremental]
+* We will use the `.github folder` to set the Github Actions workflows
+* The `bash folder` will be used to store bash scripts that will be used on the Github Actions workflow
+* By default Rstudio when you want to save a file in googleshhet will ask about authentication, the `secret file` is where a token is stored so that every time we run the code we do no have to give R permission to use googlesheet.
+* The `docker folder` contains all the Docker image settings files (e.g., Dockerfile and some helper files)
+* The `docs folder` will be used to store the rendered dashboard files
+* All the images in the `README file` will be stored in the image folder
+:::
+
+``` shell
+.
+├── .github
+├── bash
+├── docker
+├── docs
+└── images
+```
+## Setting environment variables
+
+Here it means that the we need to set up the the image that we are going to use and the  paths for R studio and our local path so that we can run Rstudio in docker and we can open it in our browser. To do that we should set up the following variabels:
+
+:::[.incremental]
+* `FLEX_IMAGE` - The development image name, here we are working with the image developed by [RamiKrispin](https://github.com/RamiKrispin/deploy-flex-actions) `rkrispin/flex_dash_env:dev.0.0.0.9000`. 
+* `LOCAL_WORKING_DIR_PATH`  (e.g., the cloned repository). This variable will be used to bind your Docker container with your local machine. This will be mainly relevant if you are using the RStudio server as your working IDE
+* `RSTUDIO_CONFIG_PATH` - The path for the local RStudio config folder. Typically it would be your home directory + `.config/rstudio`. This variable will be used to mirror your local RStudio settings (color theme, code snippets, panel settings, etc.) to the Rstudio server on the container.
+:::
+
+## Set the docker enviroment
+
+Once you have finished with installing docker and creating docker account, you need to build a docker image which is a [Dockerfile](https://github.com/AhmedAlmustfa/dash/blob/main/docker/packages/Dockerfile). The Dockerfile contains a list of instructions for the docker build command about how to construct the image. There are multiple approaches for setting up a Docker environment with the [Dockerfile](https://github.com/AhmedAlmustfa/dash/blob/main/docker/packages/Dockerfile). However, since we are going to use the image developed by [RamiKrispin](https://github.com/RamiKrispin/deploy-flex-actions) we are not going to build a docker image in this project. The Dockerfile provides a set of instructions for the docker engine about how to build the image. You can think about it as the image's recipe.
+
+
+## Setting the enviroment with Rstudio server
+
+Now that we have the dockerfile set we can spin a docker image into a running container using the following command line in the command prompt:
+
+```shell
+docker run -d -p 8787:8787 rkrispin/flex_dash_env:dev.0.0.0.9000
+```
+
+Now let's expalin what this line does:
+
+:::[.incremental]
+* `docker run` command enables you to launch a container.
+* `-d` to run the container in the background (detach mode)
+* `-p` argument maps between the container and the local machine ports, where the right to the : symbol represents the port that is exposed on the container, and the one on the left represents the port on the local machine. In the above example, we mapped port 8787 on the docker to port 8787 on the local machine.
+* `rkrispin/flex_dash_env:dev.0.0.0.9000` name of the image we want to launch.
+:::
+
+Once you hit enter it will start running, If the image is unavailable locally, it will try to pull it from the default hub (make sure you logged in, it might take a few minutes to download it). If the image was successfully launched, it should return the container ID, for example:
+
+
+`f48d4e11cd9cabc227aa7629b372ff9d6034d18ab5c1a370d76960297e56dfe5`
+
+
+Now if you want to check if the image is running you can type in the command prompt
+
+```shell
+docker ps
+
+CONTAINER ID   IMAGE                                   COMMAND                  CREATED              STATUS              PORTS                    NAME
+f48d4e11cd9c   rkrispin/flex_dash_env:dev.0.0.0.9000   "/usr/lib/rstudio-se…"   About a` minute ago   Up About a minute   0.0.0.0:8787->8787/tcp   elastic_thompson
+```
+And you can see you have information about the image that is running, `CONTAINER ID`, `IMAGE name` `PORTS` etc.,
+
+Now that we make sure everything is fine and the image is running, we can go to the browser and type`*http://localhost:8787` and it will direct you to Rstudio server. By default, the RStudio server requires a user name and password, but this authentication process has been disabled in the [Dockerfile](https://github.com/AhmedAlmustfa/dash/blob/main/docker/packages/Dockerfile) by using the `ENV` command to define the environment variable USER and set it as rstudio and the `CMD` command to disable the authentication step. However, now you can access the Rstudio server from the browser without authentication:
+
+![Rstudio server running in the browser](figures/Screenshot (81).png){#fig-penguins}
+
+
+
+We have a functional environment, yet we are still missing a couple of elements to make this container fully functional as a development environment. For example, although we can access the container from the browser, it is still an isolated environment as we can't save or commit changes in the code. Let's add the -v argument to mount a local volume with the container. This will enable you to work inside the container and read and write data from your local machine. If the container is already running, use the docker kill, followed by the container ID (see the docker ps output for the container ID) to stop the running containers:
+
+`docker kill ac26ec61e71b`
+
+Let's repeat the previous command and add the -v argument to mount the container to your local folder:
+
+You can see now, after binding the local folder to the docker with the -v argument, the flexdash folder is now available inside the container:
+
+![Rstudio server running in the browser](figures/Screenshot (82).png){#fig-pengui}
+
+Note that the `YOUR_LOCAL_PATH` environment variable represents the local folder path on my machine, the `/home/rstudio/` folder is the root folder on the container, and dash is the name of the mounted folder inside the container. To run it on your local machine. 
+
+Does it sufficient to start developing our dashboard? Technically, yes, we can now develop and test our code inside the container and save the changes on the local folder (and commit the changes with git). But before we continue, let's mount our local RStudio config file with the one on the container. This will mirror your local RStudio setting to the RStudio server running inside the container:
+
+```shell
+docker run -d -p 8787:8787 \
+ -v YOUR_LOCAL_PATH:/home/rstudio/FOLDER_NAME \
+ -v $RSTUDIO_CONFIG_PATH:/home/rstudio/.config/rstudio \
+ rkrispin/flex_dash_env:dev.0.0.0.9000
+ ```
+ 
+:::{.callout-note}
+Note: Your local R setting file should be, by default, under your root folder, for example, the path on my machine - C:/Users/Asus/AppData/Roaming/RStudio:/home/rstudio/.config/rstudio 
+:::
+
+![Rstudio server running in the browser](figures/Screenshot (83).png){#fig-penguins}
+
+## Dashboard develoment
+
+As for dashboard development, first we will have to set the `_site.yml`, that give as the permission to set up the site option. The name refer to the site name while the argument output-dir specify the rendering output directory.
+
+```shell
+name: "Dashboard"
+output_dir: docs
+```
+
+This will direct the output of the flexdashboard files to the docs folder, which will enable to build a site with Github Pages.
+
+To create a flexdashboard, here we are using Rstudio so from the toolbar select File and then New file from which we select Rmarkdown and from its template select flex dashboard, then it will appear the following page:
+
+```shell
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+```
+
+We will name the template file as index.Rmd, which will generate an index.html that will be used as the website file. However, now you can you can build the dashboard and render it after that commit the output and push it to Github repository, it will ask you to provide your Github credintials, so go to the terminal and provide the following:
+
+``` shell
+* git config --global user.email "YOUR_EMAIL"
+* git config --global user.name "GITHUB_USER_NAME"
+```
+
+Having done with this, it may ask you again when you need to push the output to provide you `Github username` and and `gihub password`, for the username give provide your usename for the github password you have go back to your github and create a `github tocken` copy that tocken and paste it where it requires you to give your github password, after this you can push the output to your github repository.
+
+
+## Deploying on github pages
+
+To deploy the flex dashboard in Github Pages go to the repository select setting and then pages, then make sure that where it is written source `Deploy from a branch` is selected then select `docs` and click `save`, It might take a few minutes until the website is render and you should see the link for the website on that page (refresh the page if you cannot see it). Github Pages use the following website address pattern:
+
+https://GITHUB_USER_NAME.github.io/REPO_NAME/
+
+In this example the link for the dashboard is:
+[Link](https://ahmedalmustfa.github.io/dash/)
+
+The following screeshot shows the steps:
+
+![Steps to deploy on Githup Pages](figures/Screenshot (84).png){#fig-pes}
+
+## Set the automation with github actions
+
+By this point, we set a development environment with Docker, built a dashboard, tested it inside the container, and deployed it on Github Pages. The next step is to set a workflow on Github Actions which will rerender the dashboard daily to get up-to-date with the data selected randomly. 
+
+Now let us start by creating a workflow from Github Action. There is no specific built-in workflow for our use case. Therefore we will select the set up a workflow yourself, clicking on that Github will automatically generate a file named `main.yml` under the folder `.github/workflows/`.
+
+
+``` shell
+name: Dashboard Refresh
+
+on: 
+  schedule:  
+    - cron:  '0 9 * * *'
+jobs:
+  refresh-the-dashboard:
+    runs-on: ubuntu-20.04  
+    container: 
+      image: rkrispin/flex_dash_env:dev.0.0.0.9000
+    steps:
+    - name: checkout_repo
+      uses: actions/checkout@v2
+      with: 
+        ref: 'main'
+    - name: Render Rmarkdown
+      run: bash ./bash/render_dashboard.sh "YOUR_GITHUB_USER_NAME" "YOUR_GITHUB_LOGIN_EMAIL"
+```
+
+Let's review the key arguments of the above yml file:
+
+::: [.incremental]
+* `name` - Defines the workflow name
+* `on` - Defines the trigger method of the job. In our use case, we will set a scheduled job to run everyday `at 09:00am`:
+
+:::{.callout-note}
+- The cron setting on Github Actions follows the regular structure of minute, hour, day of the month, month, and day of the week.
+- In the above setting, `0 9 * * *` represents - running everyday at 9 at the beginning of the hour
+- The crontab guru is a nice resource to translate cron settings into human language format
+:::
+
+* `jobs` - Defines the jobs to execute during the run time. In our case, we have a single job to run, and we define it as refresh-the-dashboard
+* `runs-on` - Sets the OS system to run the job. So far, I have used Ubuntu-18.04. However, Github announced that they deprecated this version. Therefore, we will use the recommended version - Ubuntu-20.04.
+* `container` - This argument enables us to run the job inside a containerized environment (which was the main reason for setting a dockerized development environment).
+image - As the name implies, set the image name. In this case, we will use the same image we used for the development
+* `steps` - Defines the executions steps of the job using the following arguments:
+
+:::{.callout-note}
+* name - Defines the step name
+* run - Executes code on the command line
+:::
+
+* We will use the following steps:
+
+:::{.callout-note}
+* Checkout from the repo (equivalent to git clone), and use the ref argument to define the branch we want to use for the job.
+* Once we checked out, we can call, reference, and run files from the repo (with respect to the branch we referenced)
+* We will use the run argument to call the bash script that we created to render the dashboard and push the changes
+:::
+
+:::
+
+After setting the workflow on the Github interface, I recommend syncing the changes on the origin with your local branch by using git pull
+
+
+## Summary
+
+The scope of this project was to to build a dashboard that can update itself automatically in a daily basis, by randomly select a subset from the dataset and use this subset to update the dashboard and accordingly save this subset data in googleshhets. However, to achieve this objective we had to deal with following arguments:
+
+:::[.incremental]
+* Developing flex-dashboard using Rstodio.
+* Ruining an image in a docker container.
+* Deploying in Github Pages.
+* Github Actions.
+:::
+
+
+
+

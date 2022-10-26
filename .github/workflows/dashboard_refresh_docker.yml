@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: gethub secret
         run: |      
-          eho "The secret is masked: "
+          echo "The secret is masked: "
           echo ${{ secrets.CANDY_SHOP }}
       - name: checkout_repo
         uses: actions/checkout@v2

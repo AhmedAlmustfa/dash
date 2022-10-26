@@ -11,9 +11,9 @@ jobs:
      image: rkrispin/flex_dash_env:dev.0.0.0.9000
     steps:
       - name: gethub secret
-        uses: actions/checkout@v2
-        with:        
-          auth-private-key: ${{ secrets.CANDY_SHOP }}
+        run: |      
+          eho "The secret is masked: "
+          echo ${{ secrets.CANDY_SHOP }}
       - name: checkout_repo
         uses: actions/checkout@v2
         with: 

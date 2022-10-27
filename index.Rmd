@@ -25,10 +25,9 @@ data <- data.frame(data)
 
 
 
-
 ```{r}
 gs4_auth(
-  cache = "./secrets",
+  cache = "./secrets/.",
   email = "ahmedkhatir22@gmail.com"
 )
 ```

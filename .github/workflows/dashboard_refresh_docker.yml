@@ -11,7 +11,7 @@ jobs:
      image: rkrispin/flex_dash_env:dev.0.0.0.9000
     steps:
       - name: "[Custom block] add GITHUB_TOKEN"
-        run:  echo "GITHUB_TOKEN = '${{ secrets.GREEN }}'" >>.Renviron
+        run:  echo "GREEN = '${{ secrets.GREEN }}'" >>.Renviron
       - name: checkout_repo
         uses: actions/checkout@v2
         with: 

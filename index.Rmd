@@ -23,6 +23,9 @@ data <- diamonds[sample(.N, 10000)]
 data <- data.frame(data)
 ```
 
+
+
+
 ```{r}
 gs4_auth(
   cache = "./secrets/",

@@ -42,9 +42,6 @@ Mysheet <- gs4_create(
 ```
 
 
-
-
-
 Data Visualization
 =======================================
 
@@ -120,9 +117,6 @@ columns {data-width=350}
 ### Heatmap of cut vs clarity
 
 ```{r}
-#create scatterplot of carat vs. price, using cut as color variable
-#ggplot(data, aes(x=carat, y=price, color=cut)) + 
-  geom_point()
 plot_ly(data, x = ~cut, y = ~clarity)
 ```
 
@@ -193,8 +187,6 @@ This report was generated on `r format(Sys.Date(), format = "%B %d, %Y" )`.
 Dataset description
 =======================================
 
-Rows
----------------------------------
 
 ### Variable description
 

@@ -121,9 +121,9 @@ columns {data-width=350}
 
 ```{r}
 #create scatterplot of carat vs. price, using cut as color variable
-ggplot(data, aes(x=carat, y=price, color=cut)) + 
+#ggplot(data, aes(x=carat, y=price, color=cut)) + 
   geom_point()
-#plot_ly(data, x = ~cut, y = ~clarity)
+plot_ly(data, x = ~cut, y = ~clarity)
 ```
 
 

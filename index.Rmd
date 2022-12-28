@@ -13,6 +13,8 @@ library(flexdashboard)
 install.packages("plotly")
 install.packages("googlesheets4")
 install.packages("DT")
+install.packages("kableExtra")
+library(kableExtra)
 library(DT)
 library(googlesheets4)
 library(plotly)
@@ -118,37 +120,19 @@ columns {data-width=350}
 ### Heatmap of cut vs clarity
 
 ```{r}
-plot_ly(data, x = ~cut, y = ~clarity)
+#create scatterplot of carat vs. price, using cut as color variable
+ggplot(data, aes(x=carat, y=price, color=cut)) + 
+  geom_point()
+#plot_ly(data, x = ~cut, y = ~clarity)
 ```
 
 
-### Scatter plot of cut
+### Bar chart plot of cut
 
 ```{r}
 plot_ly(data, x = ~cut, color = I("red"), stroke = I("black"), span = I(2))
 ```
 
-
-Data Table
-============================================
-
-
-```{r}
-# put CSV, XLS, and PDF in a collection
-datatable(
-  data,
-  extensions = 'Buttons', options = list(pageLength = 25,
-    dom = 'Bfrtip',
-    buttons = 
-      list('copy', 'print', list(
-        extend = 'collection',
-        buttons = c('csv', 'excel'),
-        text = 'Download'
-      ))
-    
-  )
-)
-```
 
 
 Summary {data-orientation=columns}
@@ -204,3 +188,69 @@ Report
 * The variance of the diamonds was `r sqrt(var(data$price))`.
 
 This report was generated on `r format(Sys.Date(), format = "%B %d, %Y" )`.
+
+
+Dataset description
+=======================================
+
+Rows
+---------------------------------
+
+### Variable description
+
+Here’s what we know about the diamonds dataset:
+
+* This dataset contains information about 53,940 round-cut diamonds. How do we know? Each row of data represents a different diamond and there are 53,940 rows of data (see help page, ?diamonds).
+
+* There are 10 variables measuring various pieces of information about the diamonds. Notice that these variable names are in lowercase. We can take a quick view of the variable names using.
+
+```{r}
+Variable <- c("Price", "Carat", "Cut", "Color", "Clarity",
+              "X", "Y", "Z", "Depth", "Table")
+Description <- c("price in US dollars",
+                 "weight of the diamond",
+                 "quality of the cut",
+                 "diamond color",
+                 "measurement of how clear the diamond is",
+                 "length in mm", "width in mm","depth in mm",
+                 "total depth percentage",
+                 "width of top of diamond relative to widest point")
+Values <- c("$326-$18,823", "0.2-5.01",
+            "Fair, Good, Very Good, Premium, Ideal",
+            "J (worst) to D (best)",
+            "I1 (worst), SI2, SI1, VS2, VS1, VVS2, VVS1, IF (best)",
+            "0-10.74", "0-58.9", "0-31.8", "43-79",
+            "43-95")
+tab <- data.frame(Variable, Description, Values)
+knitr::kable(tab,"pipe", align = c("l","c", "c"), caption = "Daimond Dataset")
+```
+
+
+There are 3 variables with an ordered factor structure: cut, color, & clarity. An ordered factor arranges the categorical values in a low-to-high rank order. For example, there are 5 categories of diamond cuts with “Fair” being the lowest grade of cut to ideal being the highest grade.
+
+* There are 6 variables that are of numeric structure: carat, depth, table, x, y, z
+
+* There is 1 variable that has an integer structure: price
+
+Remember that R will always have documentation (in the help page; ?diamonds) for built-in datasets. The descriptiveness for the documentation will vary, depending on the package author.
+
+Data Table
+============================================
+
+
+```{r}
+# put CSV, XLS, and PDF in a collection
+datatable(
+  data,
+  extensions = 'Buttons', options = list(pageLength = 25,
+    dom = 'Bfrtip',
+    buttons = 
+      list('copy', 'print', list(
+        extend = 'collection',
+        buttons = c('csv', 'excel'),
+        text = 'Download'
+      ))
+    
+  )
+)
+```

@@ -96,6 +96,13 @@ valueBox(round(mean(data$x), 2),
          color = "#1f77b4")
 ```
 
+### Average width
+
+```{r}
+valueBox(round(mean(data$y), 2), 
+         icon = "fa-signal",
+         color = "#ff3399")
+```
 
 Column {data-width=425}
 ---------------------------------

@@ -2,7 +2,7 @@
 title: "Dashboard"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: rows
+    orientation: columns
     vertical_layout: fill
     social: ["twitter", "facebook", "menu"]
     source_code: embed
@@ -14,6 +14,8 @@ install.packages("plotly")
 install.packages("googlesheets4")
 install.packages("DT")
 install.packages("kableExtra")
+install.packages("dplyr")
+library(dplyr)
 library(kableExtra)
 library(DT)
 library(googlesheets4)
@@ -45,47 +47,57 @@ Mysheet <- gs4_create(
 Data Visualization
 =======================================
 
-Rows
+Column { data-width=150 }
 ---------------------------------
 
 ### Average of carat
 
 ```{r}
-valueBox(round(mean(data$carat), 3),
-         icon = "fa-chart-area")
+valueBox(round(mean(data$carat), 2),
+         icon = "fa-chart-area",
+         color = "forestgreen")
 ```
 
 
 ### Average of price
 
 ```{r}
-valueBox(round(mean(data$price), 3), 
-         icon = "fa-credit-card")
+valueBox(round(mean(data$price), 2), 
+         icon = "fa-credit-card",
+         color = "purple")
 ```
 
 ### Average of depth
 
 ```{r}
-valueBox(round(mean(data$depth), 3), 
-         icon = "fa-signal")
+valueBox(round(mean(data$depth), 2), 
+         icon = "fa-signal",
+         color = "#e5383b")
 ```
 
 ###  Diamonds price index
 
 ```{r}
-gauge(round(mean(data$price),
+gauge(round(data$price,
             digits = 2),
-            min = 0,
-            max = max(data$price),
-            gaugeSectors(success = c(0,min(data$price)),
-                         warning = c(min(data$price),mean(data$price)),
-                         danger = c(mean(data$price),max(data$price)),
-                         colors = c("green", "yellow", "red")))
+      min = 0,
+      max = 18823,
+      gaugeSectors(success = c(0, 15000),
+                   warning = c(15000,18500),
+                   danger = c(18500,18823),
+                   colors = c("green", "yellow", "red")))
+```
+
+### Average length
+
+```{r}
+valueBox(round(mean(data$x), 2), 
+         icon = "fa-signal",
+         color = "#1f77b4")
 ```
 
 
-
-column {data-width=350}
+Column { data-width=425 }
 ---------------------------------
 
 ### Bar chart of the quality of the cut by clarity
@@ -96,35 +108,46 @@ plot_ly(data, x = ~cut, color = ~clarity, colors = "Accent")
 
 ### Scatter plot of carat vs price
 
-```{r}
-p4 <- plot_ly(data, x = ~price) %>%
-  add_markers(y = ~carat,
-              text = ~paste('Carat: ', carat),
-              showlegend = F) %>%
-  add_lines(y = ~fitted(loess(carat ~price)),
-            name = 'Loes Smoother',
-            color = I("#FFC125"),
-            showlegend =T,
-            line = list(width = 5)) %>%
-  layout(xaxis = list(title = "Price"),
-         yaxis = list(title = "Carat"))
-p4
+```{r, warning=FALSE, message=FALSE}
+plot_ly(data, x = ~carat, y = ~price, color = ~cut,
+        size = ~carat, text = ~paste("Color: ", color))
 ```
 
-columns {data-width=350}
+Column { data-width=425 }
 ---------------------------------
 
-### Heatmap of cut vs clarity
+### Pie plot for cut, clarity and color
 
-```{r}
-plot_ly(data, x = ~cut, y = ~clarity)
+```{r, warning=FALSE, message=FALSE}
+fig <- plot_ly()
+fig <- fig %>% add_pie(data = count(data, cut), labels = ~cut, values = ~n,
+                       name = "Cut", domain = list(x = c(0, 0.4), y = c(0.4, 1)))
+fig <- fig %>% add_pie(data = count(data, color), labels = ~color, values = ~n,
+                       name = "Color", domain = list(x = c(0.6, 1), y = c(0.4, 1)))
+fig <- fig %>% add_pie(data = count(data, clarity), labels = ~clarity, values = ~n,
+                       name = "Clarity", domain = list(x = c(0.25, 0.75), y = c(0, 0.6)))
+fig <- fig %>% layout(title = "Pie Charts with Subplots", showlegend = F,
+                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+fig
+#plot_ly(data, x = ~cut, y = ~clarity)
 ```
 
 
-### Bar chart plot of cut
+### Donut charts of color
 
 ```{r}
-plot_ly(data, x = ~cut, color = I("red"), stroke = I("black"), span = I(2))
+df <- data %>% group_by(clarity)
+df <- df %>% summarize(count = n())
+fig <- df %>% plot_ly(labels = ~clarity, values = ~count)
+fig <- fig %>% add_pie(hole = 0.6)
+fig <- fig %>% layout(title = "Donut charts of color",  showlegend = F,
+                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+fig
+#plot_ly(data, x = ~color, color = I("red"), stroke = I("black"), span = I(2))
 ```
 
 
